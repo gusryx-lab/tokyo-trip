@@ -1,0 +1,2089 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>✈️ Tokyo Trip 2026</title>
+
+  <style>
+    :root {
+      --bg-color: #f2f2f7;
+      --card-bg: #ffffff;
+      --border-color: #e5e5ea;
+      --text-main: #1c1c1e;
+      --text-sub: #8e8e93;
+      --accent-green: #34c759;
+      --accent-red: #ff3b30;
+      --accent-blue: #007aff;
+      --gray-card: #2c2c2e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      padding: 16px 12px;
+      min-height: 100vh;
+    }
+
+    body.modal-opened {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+      height: 100%;
+    }
+
+    .notion-container {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .page-header { padding: 4px 4px; }
+    .page-title-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .page-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .trip-date-badge {
+      font-size: 13px;
+      color: var(--text-sub);
+      font-weight: 600;
+    }
+
+    /* 상단 배너 (날씨 1시간 단위 포함) */
+    .trip-banner {
+      background: linear-gradient(135deg, #3a3a3c 0%, #1c1c1e 100%);
+      color: #ffffff;
+      padding: 16px;
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .banner-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .banner-text-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+
+    .banner-links-wrapper {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .link-toggle-container {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      background: #2c2c2e;
+      border: 1px solid #48484a;
+      border-radius: 6px;
+      overflow: visible;
+    }
+
+    .banner-action-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      background: transparent;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .subtle-toggle-btn {
+      padding: 4px 6px;
+      font-size: 10px;
+      background: transparent;
+      color: #8e8e93;
+      border: none;
+      border-left: 1px solid #48484a;
+      cursor: pointer;
+    }
+    .subtle-toggle-btn:hover { color: #fff; }
+
+    .link-dropdown-box {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 32px;
+      background: #2c2c2e;
+      border: 1px solid #48484a;
+      padding: 8px;
+      border-radius: 8px;
+      z-index: 99;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      width: 220px;
+    }
+    .link-dropdown-box.show { display: flex; flex-direction: column; gap: 6px; }
+
+    .link-dropdown-input {
+      width: 100%;
+      background: #1c1c1e;
+      border: 1px solid #48484a;
+      color: #fff;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      outline: none;
+    }
+
+    .link-dropdown-footer {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-top: 2px;
+    }
+    .link-dropdown-footer span {
+      font-size: 10px;
+      color: var(--text-sub);
+    }
+
+    /* 배너 내 1시간 단위 날씨 스트립 스타일 */
+    .banner-weather-strip {
+      border-top: 1px solid #3a3a3c;
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .banner-weather-title {
+      font-size: 11px;
+      color: #aeaeb2;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
+    .hourly-weather-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .hourly-weather-scroll::-webkit-scrollbar { display: none; }
+    .hourly-item {
+      flex: 0 0 auto;
+      background: #2c2c2e;
+      border: 1px solid #48484a;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: center;
+      min-width: 55px;
+    }
+    .hourly-time { font-size: 10px; color: #8e8e93; margin-bottom: 2px; }
+    .hourly-temp { font-size: 12px; font-weight: 700; color: #fff; }
+
+    .rate-setting-box {
+      font-size: 11px;
+      color: #aeaeb2;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rate-input {
+      width: 55px;
+      padding: 2px 4px;
+      background: #2c2c2e;
+      border: 1px solid #48484a;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 0 4px;
+      position: relative;
+    }
+
+    .section-title-wrapper {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+
+    .header-inline-amount {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-red);
+    }
+
+    .days-carousel {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      scroll-snap-type: x mandatory;
+      padding: 4px 0 8px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .days-carousel::-webkit-scrollbar { display: none; }
+
+    .day-card {
+      flex: 0 0 92%;
+      scroll-snap-align: center;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .day-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .day-header {
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .day-action-btns {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .day-top-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #f9f9fb;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-main);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .pin-day-btn {
+      padding: 4px 6px;
+      font-size: 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #f9f9fb;
+      cursor: pointer;
+    }
+    .pin-day-btn.pinned {
+      background: var(--text-main);
+      color: #fff;
+    }
+
+    .schedule-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; min-height: 50px; }
+    
+    /* 드래그 앤 드롭 스타일 */
+    .schedule-item {
+      font-size: 13px;
+      background: #f9f9fb;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #efeff4;
+      cursor: grab;
+      user-select: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .schedule-item:active { cursor: grabbing; }
+    .schedule-item.dragging {
+      opacity: 0.4;
+      background: #e5e5ea;
+    }
+    .schedule-item.drag-over {
+      border-top: 2px solid var(--accent-blue);
+    }
+
+    .schedule-header-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .schedule-title { 
+      font-weight: 700; 
+      flex: 1; 
+      cursor: pointer;
+      color: var(--text-main);
+      text-decoration: none;
+    }
+    .schedule-title.completed { text-decoration: line-through; color: var(--text-sub); }
+
+    .btn-group { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .add-schedule-btn {
+      width: 100%;
+      padding: 10px;
+      border: 1px dashed #d1d1d6;
+      background: #ffffff;
+      border-radius: 10px;
+      color: var(--text-sub);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .shop-category {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .filter-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+    .filter-btn {
+      padding: 4px 8px;
+      font-size: 11px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background: #f9f9fb;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-sub);
+    }
+    .filter-btn.active {
+      background: var(--text-main);
+      color: #ffffff;
+      border-color: var(--text-main);
+    }
+
+    .add-input-group {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .add-input-group input, .add-input-group select {
+      padding: 8px 10px;
+      font-size: 13px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      background: #f9f9fb;
+    }
+
+    .add-input-group select.item-category { flex: 1.1; min-width: 0; font-size: 12px; font-weight: 700; }
+    .add-input-group input.item-name { flex: 1.8; min-width: 0; }
+    .add-input-group input.item-cost { flex: 1.1; min-width: 0; }
+    .add-input-group select.item-currency { width: 62px; padding: 8px 4px; font-size: 12px; font-weight: 700; }
+
+    .add-icon-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      font-weight: 700;
+      background: var(--accent-green);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .item-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      background: #f9f9fb;
+      padding: 8px 10px;
+      border-radius: 8px;
+      gap: 6px;
+    }
+
+    .item-left { display: flex; align-items: center; gap: 6px; flex: 1; overflow: hidden; }
+
+    .cat-badge {
+      font-size: 10px;
+      padding: 3px 6px;
+      border-radius: 5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .cat-badge.me { color: #004085; background-color: #cce5ff; }
+    .cat-badge.family { color: #155724; background-color: #d4edda; }
+    .cat-badge.friend { color: #383d41; background-color: #e2e3e5; }
+
+    .item-cost-input {
+      width: 70px;
+      padding: 4px 6px;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      text-align: right;
+      background: #fff;
+    }
+
+    .item-currency-select {
+      font-size: 11px;
+      padding: 4px 2px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: #fff;
+      font-weight: 700;
+    }
+
+    .item-right { display: flex; align-items: center; gap: 4px; }
+    .delete-btn { background: transparent; border: none; color: var(--text-sub); font-size: 13px; cursor: pointer; padding: 2px; }
+
+    .ledger-container {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+
+    .expense-total-box {
+      background: var(--gray-card);
+      color: #ffffff;
+      padding: 18px 20px;
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    .total-header { display: flex; justify-content: space-between; align-items: center; }
+    .total-title-text { font-size: 13px; color: #aeaeb2; font-weight: 600; }
+
+    .csv-mini-btn {
+      background: #3a3a3c;
+      color: var(--accent-green);
+      border: 1px solid #48484a;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .total-amount-group {
+      margin-top: 6px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+
+    .total-amount-main { font-size: 26px; font-weight: 800; letter-spacing: -0.8px; color: #ffffff; }
+    .total-amount-sub { font-size: 14px; color: #aeaeb2; font-weight: 500; margin-left: 6px; }
+    .touch-hint { font-size: 11px; color: #a1a1a6; font-weight: 400; }
+
+    .map-header-link {
+      display: inline-block;
+      margin-bottom: 6px;
+      font-size: 12px;
+      color: var(--text-sub);
+      text-decoration: underline;
+    }
+
+    .map-container-large {
+      width: 100%;
+      height: 450px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: var(--card-bg);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      -webkit-overflow-scrolling: touch;
+    }
+    .map-container-large iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 360px;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+
+    .modal-card-large {
+      background: #ffffff;
+      width: 100%;
+      max-width: 950px;
+      height: 85vh;
+      max-height: 800px;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .modal-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+    .modal-row.sub { padding-left: 10px; font-size: 12px; color: var(--text-sub); }
+    .modal-row.total {
+      border-top: 1px solid var(--border-color);
+      padding-top: 10px;
+      font-weight: 800;
+      font-size: 15px;
+      color: var(--accent-red);
+    }
+
+    .modal-close-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--bg-color);
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      cursor: pointer;
+      margin-top: 10px;
+      flex-shrink: 0;
+    }
+
+    .todo-split-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 10px;
+      padding: 2px;
+      overflow: hidden;
+    }
+    @media (max-width: 768px) {
+      .todo-split-container {
+        grid-template-columns: 1fr;
+        overflow-y: auto;
+      }
+    }
+
+    .todo-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #f9f9fb;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      height: 100%;
+      min-height: 0;
+    }
+    @media (max-width: 768px) {
+      .todo-pane {
+        height: auto;
+        min-height: 220px;
+      }
+    }
+
+    .pane-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .memo-textarea-modal {
+      width: 100%;
+      flex: 1;
+      min-height: 150px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      outline: none;
+      resize: none;
+      background: #ffffff;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .checklist-input-row {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .checklist-input {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      background: #ffffff;
+      outline: none;
+    }
+    .checklist-add-btn {
+      padding: 6px 12px;
+      background: var(--text-main);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .checklist-items {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .check-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      background: #fff;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #efeff4;
+    }
+    .check-row-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .photo-upload-box {
+      border: 1px dashed var(--border-color);
+      background: #fff;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .photo-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .photo-thumb-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      background: #000;
+    }
+    .photo-thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+    .photo-thumb-wrap:hover img {
+      transform: scale(1.05);
+    }
+    .photo-del-btn {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2;
+    }
+
+    .lightbox-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .lightbox-content {
+      max-width: 90vw;
+      max-height: 90vh;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 20px;
+      right: 25px;
+      color: #fff;
+      font-size: 32px;
+      font-weight: bold;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+    }
+
+    /* 일본어 크게 보여주기 모달 스타일 */
+    .cheat-large-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 300;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .cheat-large-card {
+      background: #fff;
+      width: 100%;
+      max-width: 340px;
+      border-radius: 20px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .cheat-large-jp { font-size: 24px; font-weight: 800; color: var(--text-main); word-break: keep-all; }
+    .cheat-large-kr { font-size: 14px; color: var(--text-sub); }
+    .cheat-large-mean { font-size: 15px; font-weight: 700; color: var(--accent-blue); background: #f0f7ff; padding: 8px; border-radius: 8px; }
+
+    /* 필수 회화 팝업 리스트 스타일 (모바일 최대 크기 및 넓은 레이아웃 적용) */
+    .cheat-modal-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 500px;
+      height: 92vh;
+      max-height: 850px;
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .cheat-list-container {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding-right: 2px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cheat-row-item {
+      background: #f9f9fb;
+      border: 1px solid #efeff4;
+      padding: 12px 14px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: grab;
+      user-select: none;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .cheat-row-item:active { cursor: grabbing; }
+    .cheat-row-item.dragging {
+      opacity: 0.4;
+      background: #e5e5ea;
+    }
+    .cheat-row-item.drag-over {
+      border-top: 2px solid var(--accent-blue);
+    }
+    .cheat-row-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .cheat-add-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+      flex-shrink: 0;
+    }
+    .cheat-input-row {
+      display: flex;
+      gap: 6px;
+    }
+    .cheat-input {
+      flex: 1;
+      padding: 9px 10px;
+      font-size: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      outline: none;
+      background: #f9f9fb;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="notion-container">
+
+    <div class="page-header">
+      <div class="page-title-row">
+        <div class="page-title">✈️ Tokyo</div>
+        <div class="trip-date-badge">09.09(수) ~ 09.11(금)</div>
+      </div>
+      
+      <!-- 상단 배너 (도쿄 여행 일정 + 1시간 단위 날씨 스트립 + 항공권/숙소/회화 순 버튼 배치) -->
+      <div class="trip-banner">
+        <div class="banner-top-row">
+          <div class="banner-text-title">🗓️ 도쿄 여행 일정</div>
+          
+          <div class="banner-links-wrapper">
+            <div class="link-toggle-container">
+              <a href="#" id="flight-direct-btn" class="banner-action-btn" target="_blank" onclick="handleDirectLinkClick(event, 'flight')">✈️ 항공권</a>
+              <button type="button" class="subtle-toggle-btn" onclick="toggleLinkDropdown(event, 'flight')">▼</button>
+              <div id="flight-dropdown" class="link-dropdown-box" onclick="event.stopPropagation()">
+                <input type="text" id="flight-link-input" class="link-dropdown-input" placeholder="항공권 링크 입력" oninput="saveCustomLinks()" onchange="saveCustomLinks()">
+                <div class="link-dropdown-footer">
+                  <span>입력시 자동 저장됩니다</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="link-toggle-container">
+              <a href="#" id="hotel-direct-btn" class="banner-action-btn" target="_blank" onclick="handleDirectLinkClick(event, 'hotel')">🏨 숙소</a>
+              <button type="button" class="subtle-toggle-btn" onclick="toggleLinkDropdown(event, 'hotel')">▼</button>
+              <div id="hotel-dropdown" class="link-dropdown-box" onclick="event.stopPropagation()">
+                <input type="text" id="hotel-link-input" class="link-dropdown-input" placeholder="숙소 링크 입력" oninput="saveCustomLinks()" onchange="saveCustomLinks()">
+                <div class="link-dropdown-footer">
+                  <span>입력시 자동 저장됩니다</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 필수회화 버튼 (항공권/숙소 다음 순서) -->
+            <button type="button" class="banner-action-btn" style="background:#2c2c2e; border:1px solid #48484a; border-radius:6px; padding:4px 8px;" onclick="openCheatModal()">🗣️ 필수회화</button>
+          </div>
+        </div>
+
+        <!-- 1시간 단위 도쿄 날씨 스트립 -->
+        <div class="banner-weather-strip">
+          <div class="banner-weather-title">
+            <span>🌤️ 도쿄 1시간 단위 날씨 예보</span>
+            <span id="weather-update-status" style="font-size:10px; color:#8e8e93;">로드 중...</span>
+          </div>
+          <div class="hourly-weather-scroll" id="hourly-weather-container">
+            <div class="hourly-item"><div class="hourly-time">-시</div><div class="hourly-temp">-°C</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. 일자별 일정 (드래그 앤 드롭 적용) -->
+    <div>
+      <div class="section-header">
+        <span class="section-title">🗓️ 일자별 일정</span>
+      </div>
+
+      <div class="days-carousel" id="carousel-container">
+        <!-- Day 1 -->
+        <div class="day-card" id="card-day1">
+          <div>
+            <div class="day-header-row">
+              <div class="day-header">Day 1</div>
+              <div class="day-action-btns">
+                <button class="pin-btn-day1 pin-day-btn" id="pin-btn-day1" onclick="togglePinDay('day1')" title="이 날짜를 기본 화면으로 고정">📌</button>
+                <a class="day-top-btn" id="day1-map-btn" href="#" target="_blank">📍 전체 경로</a>
+                <button class="day-top-btn" onclick="openMemoModal('day1')">📝 할일</button>
+              </div>
+            </div>
+            <div class="schedule-list" id="schedule-day1" ondragover="allowDrop(event)" ondragleave="removeDropStyle(event)" ondrop="dropSchedule(event, 'day1')"></div>
+          </div>
+          <button class="add-schedule-btn" onclick="addSchedulePrompt('day1')">➕ 일정 추가</button>
+        </div>
+
+        <!-- Day 2 -->
+        <div class="day-card" id="card-day2">
+          <div>
+            <div class="day-header-row">
+              <div class="day-header">Day 2</div>
+              <div class="day-action-btns">
+                <button class="pin-btn-day2 pin-day-btn" id="pin-btn-day2" onclick="togglePinDay('day2')" title="이 날짜를 기본 화면으로 고정">📌</button>
+                <a class="day-top-btn" id="day2-map-btn" href="#" target="_blank">📍 전체 경로</a>
+                <button class="day-top-btn" onclick="openMemoModal('day2')">📝 할일</button>
+              </div>
+            </div>
+            <div class="schedule-list" id="schedule-day2" ondragover="allowDrop(event)" ondragleave="removeDropStyle(event)" ondrop="dropSchedule(event, 'day2')"></div>
+          </div>
+          <button class="add-schedule-btn" onclick="addSchedulePrompt('day2')">➕ 일정 추가</button>
+        </div>
+
+        <!-- Day 3 -->
+        <div class="day-card" id="card-day3">
+          <div>
+            <div class="day-header-row">
+              <div class="day-header">Day 3</div>
+              <div class="day-action-btns">
+                <button class="pin-btn-day3 pin-day-btn" id="pin-btn-day3" onclick="togglePinDay('day3')" title="이 날짜를 기본 화면으로 고정">📌</button>
+                <a class="day-top-btn" id="day3-map-btn" href="#" target="_blank">📍 전체 경로</a>
+                <button class="day-top-btn" onclick="openMemoModal('day3')">📝 할일</button>
+              </div>
+            </div>
+            <div class="schedule-list" id="schedule-day3" ondragover="allowDrop(event)" ondragleave="removeDropStyle(event)" ondrop="dropSchedule(event, 'day3')"></div>
+          </div>
+          <button class="add-schedule-btn" onclick="addSchedulePrompt('day3')">➕ 일정 추가</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 총 지출 금액 종합 박스 (평균 환율 내용 이동 완료) -->
+    <div>
+      <div class="expense-total-box" onclick="openDetailModal()">
+        <div class="total-header">
+          <span class="total-title-text">📊 총 지출 금액 종합</span>
+          <button class="csv-mini-btn" onclick="event.stopPropagation(); exportToCSV();">📊 CSV 내보내기</button>
+        </div>
+        <div class="total-amount-group">
+          <div>
+            <span class="total-amount-main" id="total-expense-krw">0 원</span>
+            <span class="total-amount-sub" id="total-expense-jpy">(약 ¥0)</span>
+          </div>
+          <span class="touch-hint">상세 내역 보기 🔍</span>
+        </div>
+        <!-- 평균 환율 설정 박스를 총 지출 금액 총합 하단으로 이동 -->
+        <div style="margin-top: 14px; border-top: 1px solid #48484a; padding-top: 10px; display: flex; justify-content: flex-end;">
+          <div class="rate-setting-box">
+            <span>평균 환율 100엔 =</span>
+            <input type="number" id="jpy-rate-input" class="rate-input" value="900" onchange="updateExchangeRate()">
+            <span>원</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. 쇼핑 리스트 -->
+    <div>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <span class="section-title">🛒 쇼핑 리스트</span>
+          <span id="shopping-total-summary" class="header-inline-amount"></span>
+        </div>
+      </div>
+      
+      <div class="shop-category">
+        <div class="filter-tabs">
+          <button class="filter-btn active" onclick="setShoppingFilter('all', this)">전체</button>
+          <button class="filter-btn" onclick="setShoppingFilter('me', this)">🙋‍♂️ 나</button>
+          <button class="filter-btn" onclick="setShoppingFilter('family', this)">👨‍👩‍👧‍👦 가족</button>
+          <button class="filter-btn" onclick="setShoppingFilter('friend', this)">🎁 지인</button>
+        </div>
+
+        <div class="add-input-group">
+          <select id="input-shop-cat" class="item-category">
+            <option value="me">🙋‍♂️ 나</option>
+            <option value="family">👨‍👩‍👧‍👦 가족</option>
+            <option value="friend">🎁 지인</option>
+          </select>
+          <input type="text" id="input-shop-name" class="item-name" placeholder="품목명...">
+          <input type="number" id="input-shop-cost" class="item-cost" placeholder="금액">
+          <select id="input-shop-curr" class="item-currency">
+            <option value="JPY">¥ (엔)</option>
+            <option value="KRW">원 (KRW)</option>
+          </select>
+          <button class="add-icon-btn" onclick="addShoppingItem()">＋</button>
+        </div>
+        
+        <ul class="item-list" id="shopping-item-list"></ul>
+      </div>
+    </div>
+
+    <!-- 3. 여행 경비 가계부 -->
+    <div>
+      <div class="section-header">
+        <div class="section-title-wrapper">
+          <span class="section-title">💳 여행 경비 가계부</span>
+          <span id="expense-total-summary" class="header-inline-amount"></span>
+        </div>
+      </div>
+      <div class="ledger-container">
+        <div style="padding-top: 4px;">
+          <div class="add-input-group">
+            <input type="text" id="expense-title" class="item-name" placeholder="항목 (예: 비행기, 숙소)">
+            <input type="number" id="expense-amount" class="item-cost" placeholder="금액">
+            <select id="expense-curr" class="item-currency">
+              <option value="KRW">원 (KRW)</option>
+              <option value="JPY">¥ (엔)</option>
+            </select>
+            <button class="add-icon-btn" onclick="addExpense()">＋</button>
+          </div>
+          <ul class="item-list" id="expense-input-list"></ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. 전체 구글 지도 -->
+    <div>
+      <div class="section-header">
+        <span class="section-title">📍 전체 구글 지도</span>
+      </div>
+      
+      <a class="map-header-link" href="https://www.google.com/maps/d/edit?mid=1WSjSDXwq7AlZJVly93cNl9mu7yuxRYU&usp=sharing" target="_blank">📍편집하기</a>
+      <div class="map-container-large">
+        <iframe src="https://www.google.com/maps/d/embed?mid=1WSjSDXwq7AlZJVly93cNl9mu7yuxRYU" allowfullscreen="" loading="lazy"></iframe>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 지출 상세 모달 -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-card">
+      <div class="modal-title">📊 지출 금액 상세 내역</div>
+      
+      <div class="modal-row">
+        <span>✈️ 일반 경비</span>
+        <span id="modal-general-sum">0 원 (약 ¥0)</span>
+      </div>
+      
+      <div class="modal-row" style="margin-top: 10px;">
+        <span>🛒 쇼핑 총액</span>
+        <span id="modal-shopping-sum">0 원 (약 ¥0)</span>
+      </div>
+      <div class="modal-row sub">
+        <span>- 🙋‍♂️ 나</span>
+        <span id="modal-me-sum">0 원</span>
+      </div>
+      <div class="modal-row sub">
+        <span>- 👨‍👩‍👧‍👦 가족</span>
+        <span id="modal-family-sum">0 원</span>
+      </div>
+      <div class="modal-row sub">
+        <span>- 🎁 지인</span>
+        <span id="modal-friend-sum">0 원</span>
+      </div>
+
+      <div class="modal-row total">
+        <span>전체 총합</span>
+        <span id="modal-grand-sum">0 원 (약 ¥0)</span>
+      </div>
+      <button class="modal-close-btn" onclick="closeDetailModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 필수 언어/회화 모음 팝업창 (드래그 앤 드롭 및 넓은 화면 적용) -->
+  <div class="modal-overlay" id="cheatModal">
+    <div class="cheat-modal-card">
+      <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
+        <span>🗣️ 필수 언어 / 회화 모음</span>
+        <span style="font-size:11px; font-weight:normal; color:var(--text-sub);">터치하면 크게 보여집니다</span>
+      </div>
+      
+      <div class="cheat-list-container" id="cheat-list-popup"></div>
+
+      <div class="cheat-add-box">
+        <div style="font-size:11px; font-weight:700; color:var(--text-sub);">새 회화 표현 추가하기</div>
+        <input type="text" id="cheat-input-jp" class="cheat-input" placeholder="일본어 원문 (예: すみません)">
+        <div class="cheat-input-row">
+          <input type="text" id="cheat-input-kr" class="cheat-input" placeholder="읽기 발음 (예: 스미마센)">
+          <input type="text" id="cheat-input-mean" class="cheat-input" placeholder="뜻 의미 (예: 저기요/실례합니다)">
+        </div>
+        <button class="checklist-add-btn" style="width: 100%; padding: 10px;" onclick="addCustomCheatItem()">추가하기</button>
+      </div>
+
+      <button class="modal-close-btn" onclick="closeCheatModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 일본어 크게 보여주기 모달 -->
+  <div class="cheat-large-modal" id="cheatLargeModal" onclick="closeCheatLargeModal()">
+    <div class="cheat-large-card" onclick="event.stopPropagation()">
+      <div style="font-size:12px; font-weight:700; color:var(--text-sub);">화면을 보여주세요 👆</div>
+      <div class="cheat-large-jp" id="modal-cheat-jp"></div>
+      <div class="cheat-large-kr" id="modal-cheat-kr"></div>
+      <div class="cheat-large-mean" id="modal-cheat-mean"></div>
+      <button class="modal-close-btn" onclick="closeCheatLargeModal()">닫기</button>
+    </div>
+  </div>
+
+  <!-- 할일/체크리스트/사진 모달 (3분할 레이아웃) -->
+  <div class="modal-overlay" id="memoModal">
+    <div class="modal-card-large">
+      <div class="modal-title" id="memo-modal-title">DAY 1</div>
+      
+      <div class="todo-split-container">
+        <!-- 1열: 자유 메모 -->
+        <div class="todo-pane">
+          <div class="pane-title">📝 메모</div>
+          <textarea id="daily-memo-input" class="memo-textarea-modal" placeholder="해당 일자의 메모를 적어보세요..." oninput="saveCurrentDailyMemo()"></textarea>
+        </div>
+
+        <!-- 2열: 체크리스트 -->
+        <div class="todo-pane">
+          <div class="pane-title">✅ 체크리스트</div>
+          <div class="checklist-input-row">
+            <input type="text" id="checklist-text-input" class="checklist-input" placeholder="할일 추가..." onkeydown="if(event.key==='Enter') addChecklistItem()">
+            <button class="checklist-add-btn" onclick="addChecklistItem()">추가</button>
+          </div>
+          <ul id="checklist-items-container" class="checklist-items"></ul>
+        </div>
+
+        <!-- 3열: 사진 첨부 및 갤러리 -->
+        <div class="todo-pane">
+          <div class="pane-title">📷 사진</div>
+          <div class="photo-upload-box">
+            <input type="file" id="photo-file-input" accept="image/*" multiple style="font-size: 11px; width: 100%;" onchange="handlePhotoUpload(event)">
+          </div>
+          <div id="photo-preview-container" class="photo-preview-grid"></div>
+        </div>
+      </div>
+
+      <button class="modal-close-btn" style="background:var(--accent-blue); color:#fff;" onclick="closeMemoModal()">확인 및 저장</button>
+    </div>
+  </div>
+
+  <!-- 사진 원본 확대 보기 (라이트박스) -->
+  <div class="lightbox-overlay" id="lightboxModal" onclick="closeLightbox()">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <img class="lightbox-content" id="lightboxImg">
+  </div>
+
+  <script>
+    let currentGeneralSumKRW = 0;
+    let currentShoppingSumKRW = 0;
+    let categorySumsKRW = { me: 0, family: 0, friend: 0 };
+    let currentFilter = 'all';
+    let activeMemoDay = 'day1';
+    let krwPer100Jpy = 900;
+    let draggedItemIndex = null;
+    let draggedDay = null;
+    let draggedCheatIndex = null;
+
+    // 도쿄 1시간 단위 날씨 가져오기 (Open-Meteo API)
+    async function fetchTokyoHourlyWeather() {
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6762&longitude=139.6503&hourly=temperature_2m,weathercode');
+        const data = await res.json();
+        if (data && data.hourly && data.hourly.time) {
+          const container = document.getElementById('hourly-weather-container');
+          container.innerHTML = '';
+          
+          const nowIndex = new Date().getHours();
+          for (let i = nowIndex; i < nowIndex + 24 && i < data.hourly.time.length; i++) {
+            const timeStr = data.hourly.time[i].substring(11, 16);
+            const temp = data.hourly.temperature_2m[i];
+            const code = data.hourly.weathercode[i];
+            
+            const div = document.createElement('div');
+            div.className = 'hourly-item';
+            div.innerHTML = `
+              <div class="hourly-time">${timeStr}</div>
+              <div class="hourly-temp">${temp}°C</div>
+              <div style="font-size:10px;">${getWeatherIcon(code)}</div>
+            `;
+            container.appendChild(div);
+          }
+          document.getElementById('weather-update-status').innerText = "실시간 연동 완료";
+        }
+      } catch (e) {
+        document.getElementById('weather-update-status').innerText = "날씨 로드 실패";
+      }
+    }
+
+    function getWeatherIcon(code) {
+      if (code === 0) return "☀️";
+      if (code >= 1 && code <= 3) return "☁️";
+      if (code >= 51 && code <= 67) return "🌧️";
+      if (code >= 95) return "⚡";
+      return "🌤️";
+    }
+
+    // 기본 필수 회화 데이터 및 로컬스토리지 관리
+    const initialCheatData = [
+      { jp: 'すみません、これをお願いします。', kr: '스미마센, 고레오 오네가이시마스', mean: '저기요, 이것 주세요.' },
+      { jp: 'おすすめは何ですか？', kr: '오스스메와 난데스까?', mean: '추천 메뉴가 무엇인가요?' },
+      { jp: 'お会計お願いします。', kr: '오카이케이 오네가이시마스', mean: '계산서 부탁합니다.' },
+      { jp: 'カード使えますか？', kr: '카도 츠카에마스까?', mean: '카드 결제 되나요?' },
+      { jp: 'これの免税はできますか？', kr: '코레노 멘제이와 데키마스까?', mean: '이거 면세 받을 수 있나요?' },
+      { jp: '袋を分けてもらえますか？', kr: '후쿠로오 와케테 모라에마스까?', mean: '봉투를 따로 담아주실 수 있나요?' },
+      { jp: '〜へはどう行けばいいですか？', kr: '~에와 도오 이케바 이이데스까?', mean: '~에 어떻게 가나요?' },
+      { jp: '駅はどこですか？', kr: '에키와 도코데스까?', mean: '역이 어디에 있나요?' },
+      { jp: 'ありがとうございます。', kr: '아리가토고자이마스', mean: '감사합니다.' }
+    ];
+
+    function loadCheatList() {
+      let saved = JSON.parse(localStorage.getItem('tokyo_custom_cheats'));
+      if (!saved) {
+        saved = initialCheatData;
+        localStorage.setItem('tokyo_custom_cheats', JSON.stringify(saved));
+      }
+
+      const container = document.getElementById('cheat-list-popup');
+      if (!container) return;
+      container.innerHTML = '';
+
+      saved.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'cheat-row-item';
+        div.draggable = true;
+        div.dataset.index = idx;
+
+        div.addEventListener('dragstart', handleCheatDragStart);
+        div.addEventListener('dragend', handleCheatDragEnd);
+        div.addEventListener('dragover', handleCheatDragOver);
+        div.addEventListener('dragleave', handleCheatDragLeave);
+        div.addEventListener('drop', handleCheatDrop);
+
+        div.innerHTML = `
+          <div class="cheat-row-content" onclick="openCheatLargeModal('${item.jp}', '${item.kr}', '${item.mean}')">
+            <div style="font-size:13px; font-weight:700; color:var(--text-main);">${item.jp}</div>
+            <div style="font-size:11px; color:var(--text-sub);">${item.kr} | <span style="color:var(--accent-blue); font-weight:600;">${item.mean}</span></div>
+          </div>
+          <span style="font-size:11px; color:var(--text-sub); margin-right:4px;">⠿</span>
+          <button class="delete-btn" onclick="deleteCheatItem(${idx})">✕</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function handleCheatDragStart(e) {
+      draggedCheatIndex = Number(this.dataset.index);
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleCheatDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.cheat-row-item').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function handleCheatDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    }
+
+    function handleCheatDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    function handleCheatDrop(e) {
+      e.stopPropagation();
+      this.classList.remove('drag-over');
+      const targetIndex = Number(this.dataset.index);
+
+      if (draggedCheatIndex === targetIndex) return;
+
+      const saved = JSON.parse(localStorage.getItem('tokyo_custom_cheats')) || [];
+      const [movedItem] = saved.splice(draggedCheatIndex, 1);
+      saved.splice(targetIndex, 0, movedItem);
+
+      localStorage.setItem('tokyo_custom_cheats', JSON.stringify(saved));
+      loadCheatList();
+    }
+
+    function addCustomCheatItem() {
+      const jpInput = document.getElementById('cheat-input-jp');
+      const krInput = document.getElementById('cheat-input-kr');
+      const meanInput = document.getElementById('cheat-input-mean');
+
+      const jp = jpInput.value.trim();
+      const kr = krInput.value.trim();
+      const mean = meanInput.value.trim();
+
+      if (!jp || !mean) return alert("일본어 원문과 뜻은 필수로 입력해주세요.");
+
+      const saved = JSON.parse(localStorage.getItem('tokyo_custom_cheats')) || [];
+      saved.push({ jp, kr: kr || '-', mean });
+      localStorage.setItem('tokyo_custom_cheats', JSON.stringify(saved));
+
+      jpInput.value = '';
+      krInput.value = '';
+      meanInput.value = '';
+      loadCheatList();
+    }
+
+    function deleteCheatItem(idx) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_custom_cheats')) || [];
+      saved.splice(idx, 1);
+      localStorage.setItem('tokyo_custom_cheats', JSON.stringify(saved));
+      loadCheatList();
+    }
+
+    function openCheatModal() {
+      loadCheatList();
+      document.getElementById('cheatModal').style.display = 'flex';
+      document.body.classList.add('modal-opened');
+    }
+
+    function closeCheatModal() {
+      document.getElementById('cheatModal').style.display = 'none';
+      document.body.classList.remove('modal-opened');
+    }
+
+    function openCheatLargeModal(jp, kr, mean) {
+      document.getElementById('modal-cheat-jp').innerText = jp;
+      document.getElementById('modal-cheat-kr').innerText = kr;
+      document.getElementById('modal-cheat-mean').innerText = mean;
+      document.getElementById('cheatLargeModal').style.display = 'flex';
+      document.body.classList.add('modal-opened');
+    }
+
+    function closeCheatLargeModal() {
+      document.getElementById('cheatLargeModal').style.display = 'none';
+      document.body.classList.remove('modal-opened');
+    }
+
+    function getJpyToKrwRate() { return krwPer100Jpy / 100; }
+    function getKrwToJpyRate() { return 100 / krwPer100Jpy; }
+
+    function updateExchangeRate() {
+      const input = document.getElementById('jpy-rate-input');
+      const val = Number(input.value) || 900;
+      krwPer100Jpy = val;
+      localStorage.setItem('tokyo_jpy_rate_100', val);
+      loadExpenses();
+    }
+
+    function toggleLinkDropdown(event, type) {
+      if (event) event.stopPropagation();
+      const flightBox = document.getElementById('flight-dropdown');
+      const hotelBox = document.getElementById('hotel-dropdown');
+      
+      if (type === 'flight') {
+        const isShow = flightBox.classList.contains('show');
+        flightBox.classList.toggle('show', !isShow);
+        hotelBox.classList.remove('show');
+      } else {
+        const isShow = hotelBox.classList.contains('show');
+        hotelBox.classList.toggle('show', !isShow);
+        flightBox.classList.remove('show');
+      }
+    }
+
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.link-toggle-container')) {
+        document.getElementById('flight-dropdown').classList.remove('show');
+        document.getElementById('hotel-dropdown').classList.remove('show');
+      }
+    });
+
+    function handleDirectLinkClick(event, type) {
+      const link = localStorage.getItem(`tokyo_${type}_link`);
+      if (!link) {
+        event.preventDefault();
+        alert("등록된 링크가 없습니다. 버튼 우측의 ▼를 눌러 링크를 먼저 입력해주세요.");
+        toggleLinkDropdown(event, type);
+      }
+    }
+
+    function loadCustomLinks() {
+      const flightLink = localStorage.getItem('tokyo_flight_link') || '';
+      const hotelLink = localStorage.getItem('tokyo_hotel_link') || '';
+
+      const flightInput = document.getElementById('flight-link-input');
+      const hotelInput = document.getElementById('hotel-link-input');
+      
+      if (flightInput) flightInput.value = flightLink;
+      if (flightLink) document.getElementById('flight-direct-btn').href = flightLink;
+
+      if (hotelInput) hotelInput.value = hotelLink;
+      if (hotelLink) document.getElementById('hotel-direct-btn').href = hotelLink;
+    }
+
+    function saveCustomLinks() {
+      const flightLink = document.getElementById('flight-link-input').value.trim();
+      const hotelLink = document.getElementById('hotel-link-input').value.trim();
+
+      if (flightLink !== '') {
+        localStorage.setItem('tokyo_flight_link', flightLink);
+        document.getElementById('flight-direct-btn').href = flightLink;
+      }
+      if (hotelLink !== '') {
+        localStorage.setItem('tokyo_hotel_link', hotelLink);
+        document.getElementById('hotel-direct-btn').href = hotelLink;
+      }
+    }
+
+    function togglePinDay(day) {
+      localStorage.setItem('tokyo_pinned_day', day);
+      applyPinnedDayScroll();
+    }
+
+    function applyPinnedDayScroll() {
+      const pinnedDay = localStorage.getItem('tokyo_pinned_day') || 'day1';
+      ['day1', 'day2', 'day3'].forEach(d => {
+        const btn = document.getElementById(`pin-btn-${d}`);
+        if (btn) {
+          if (d === pinnedDay) {
+            btn.classList.add('pinned');
+            btn.title = "현재 고정된 날짜";
+          } else {
+            btn.classList.remove('pinned');
+            btn.title = "이 날짜를 기본 화면으로 고정";
+          }
+        }
+      });
+
+      const targetCard = document.getElementById(`card-${pinnedDay}`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+      }
+    }
+
+    const initialSchedules = {
+      day1: [
+        { title: "hotel MONday TOKYO NISHIKASAI", query: "hotel MONday TOKYO NISHIKASAI", done: false },
+        { title: "하카타 돈카츠 와카바", query: "Hakata Tonkatsu Wakaba Hamamatsucho", done: false },
+        { title: "아자부다이 힐즈", query: "Azabudai Hills", done: false },
+        { title: "긴자역", query: "Ginza Station", done: false }
+      ],
+      day2: [
+        { title: "센소지", query: "Sensoji Temple", done: false },
+        { title: "시부야역", query: "Shibuya Station", done: false },
+        { title: "신주쿠역", query: "Shinjuku Station", done: false },
+        { title: "도쿄도청사", query: "Tokyo Metropolitan Government Building", done: false }
+      ],
+      day3: [
+        { title: "hotel MONday TOKYO NISHIKASAI", query: "hotel MONday TOKYO NISHIKASAI", done: false }
+      ]
+    };
+
+    function loadSchedules() {
+      ['day1', 'day2', 'day3'].forEach(day => {
+        let saved = JSON.parse(localStorage.getItem(`tokyo_sched_${day}`));
+        if (!saved) {
+          saved = initialSchedules[day];
+          localStorage.setItem(`tokyo_sched_${day}`, JSON.stringify(saved));
+        }
+
+        const container = document.getElementById(`schedule-${day}`);
+        if (!container) return;
+        container.innerHTML = '';
+
+        saved.forEach((item, idx) => {
+          const div = document.createElement('div');
+          div.className = 'schedule-item';
+          div.draggable = true;
+          div.dataset.index = idx;
+          div.dataset.day = day;
+
+          div.addEventListener('dragstart', handleDragStart);
+          div.addEventListener('dragend', handleDragEnd);
+          div.addEventListener('dragover', handleDragOver);
+          div.addEventListener('dragleave', handleDragLeave);
+          div.addEventListener('drop', handleDropOnItem);
+
+          const infoUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.query)}`;
+          const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(item.query)}`;
+          const isDone = item.done ? 'completed' : '';
+
+          div.innerHTML = `
+            <div class="schedule-header-row">
+              <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleScheduleDone('${day}', ${idx})">
+              <a class="schedule-title ${isDone}" href="${infoUrl}" target="_blank">${item.title}</a>
+            </div>
+            <div class="btn-group">
+              <span style="font-size:10px; color:var(--text-sub); margin-right:auto;">⠿ 드래그 이동</span>
+              <a class="btn" style="font-weight:700;" href="${directionsUrl}" target="_blank">📍 경로</a>
+              <button class="btn" style="color:var(--accent-red)" onclick="deleteSchedule('${day}', ${idx})">✕</button>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+
+        updateDayMapLink(day, saved);
+      });
+      applyPinnedDayScroll();
+    }
+
+    function handleDragStart(e) {
+      draggedItemIndex = Number(this.dataset.index);
+      draggedDay = this.dataset.day;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      document.querySelectorAll('.schedule-item').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (this.dataset.day === draggedDay) {
+        this.classList.add('drag-over');
+      }
+    }
+
+    function handleDragLeave(e) {
+      this.classList.remove('drag-over');
+    }
+
+    function handleDropOnItem(e) {
+      e.stopPropagation();
+      this.classList.remove('drag-over');
+      const targetDay = this.dataset.day;
+      const targetIndex = Number(this.dataset.index);
+
+      if (draggedDay !== targetDay) return;
+      if (draggedItemIndex === targetIndex) return;
+
+      const saved = JSON.parse(localStorage.getItem(`tokyo_sched_${draggedDay}`)) || [];
+      const [movedItem] = saved.splice(draggedItemIndex, 1);
+      saved.splice(targetIndex, 0, movedItem);
+
+      localStorage.setItem(`tokyo_sched_${draggedDay}`, JSON.stringify(saved));
+      loadSchedules();
+    }
+
+    function allowDrop(e) { e.preventDefault(); }
+    function removeDropStyle(e) {}
+    function dropSchedule(e, day) { e.preventDefault(); }
+
+    function updateDayMapLink(day, savedItems) {
+      const mapBtn = document.getElementById(`${day}-map-btn`);
+      if (!mapBtn) return;
+      if (!savedItems || savedItems.length === 0) {
+        mapBtn.href = "https://www.google.com/maps";
+        return;
+      }
+
+      const destination = encodeURIComponent(savedItems[savedItems.length - 1].query || savedItems[savedItems.length - 1].title);
+      let googleMapUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}`;
+
+      if (savedItems.length > 1) {
+        const waypoints = savedItems.slice(0, savedItems.length - 1).map(s => encodeURIComponent(s.query || s.title)).join('|');
+        googleMapUrl += `&waypoints=${waypoints}`;
+      }
+      mapBtn.href = googleMapUrl;
+    }
+
+    function toggleScheduleDone(day, index) {
+      const saved = JSON.parse(localStorage.getItem(`tokyo_sched_${day}`)) || [];
+      saved[index].done = !saved[index].done;
+      localStorage.setItem(`tokyo_sched_${day}`, JSON.stringify(saved));
+      loadSchedules();
+    }
+
+    function addSchedulePrompt(day) {
+      const title = prompt("새로운 일정 이름을 입력하세요:");
+      if (!title) return;
+      const query = prompt("구글맵 검색어 또는 장소명을 입력하세요:", title);
+      
+      const saved = JSON.parse(localStorage.getItem(`tokyo_sched_${day}`)) || [];
+      saved.push({ title: title, query: query || title, done: false });
+      localStorage.setItem(`tokyo_sched_${day}`, JSON.stringify(saved));
+      loadSchedules();
+    }
+
+    function deleteSchedule(day, index) {
+      const saved = JSON.parse(localStorage.getItem(`tokyo_sched_${day}`)) || [];
+      saved.splice(index, 1);
+      localStorage.setItem(`tokyo_sched_${day}`, JSON.stringify(saved));
+      loadSchedules();
+    }
+
+    function openMemoModal(day) {
+      activeMemoDay = day;
+      const dayNum = day.replace('day', 'DAY ');
+      document.getElementById('memo-modal-title').innerText = dayNum;
+      
+      const savedMemo = localStorage.getItem(`tokyo_memo_${day}`) || '';
+      document.getElementById('daily-memo-input').value = savedMemo;
+
+      loadChecklist();
+      loadPhotos();
+
+      document.getElementById('memoModal').style.display = 'flex';
+      document.body.classList.add('modal-opened');
+    }
+
+    function closeMemoModal() {
+      document.getElementById('memoModal').style.display = 'none';
+      document.body.classList.remove('modal-opened');
+    }
+
+    function saveCurrentDailyMemo() {
+      const text = document.getElementById('daily-memo-input').value;
+      localStorage.setItem(`tokyo_memo_${activeMemoDay}`, text);
+    }
+
+    function loadChecklist() {
+      const container = document.getElementById('checklist-items-container');
+      container.innerHTML = '';
+      const saved = JSON.parse(localStorage.getItem(`tokyo_check_${activeMemoDay}`)) || [];
+
+      saved.forEach((item, idx) => {
+        const li = document.createElement('li');
+        li.className = 'check-row';
+        li.innerHTML = `
+          <div class="check-row-left">
+            <input type="checkbox" ${item.done ? 'checked' : ''} onchange="toggleChecklistItem(${idx})">
+            <span style="${item.done ? 'text-decoration:line-through; color:var(--text-sub);' : ''}">${item.text}</span>
+          </div>
+          <button class="delete-btn" onclick="deleteChecklistItem(${idx})">✕</button>
+        `;
+        container.appendChild(li);
+      });
+    }
+
+    function addChecklistItem() {
+      const input = document.getElementById('checklist-text-input');
+      const val = input.value.trim();
+      if (!val) return;
+
+      const saved = JSON.parse(localStorage.getItem(`tokyo_check_${activeMemoDay}`)) || [];
+      saved.push({ text: val, done: false });
+      localStorage.setItem(`tokyo_check_${activeMemoDay}`, JSON.stringify(saved));
+
+      input.value = '';
+      loadChecklist();
+    }
+
+    function toggleChecklistItem(idx) {
+      const saved = JSON.parse(localStorage.getItem(`tokyo_check_${activeMemoDay}`)) || [];
+      saved[idx].done = !saved[idx].done;
+      localStorage.setItem(`tokyo_check_${activeMemoDay}`, JSON.stringify(saved));
+      loadChecklist();
+    }
+
+    function deleteChecklistItem(idx) {
+      const saved = JSON.parse(localStorage.getItem(`tokyo_check_${activeMemoDay}`)) || [];
+      saved.splice(idx, 1);
+      localStorage.setItem(`tokyo_check_${activeMemoDay}`, JSON.stringify(saved));
+      loadChecklist();
+    }
+
+    function loadPhotos() {
+      const container = document.getElementById('photo-preview-container');
+      container.innerHTML = '';
+      const saved = JSON.parse(localStorage.getItem(`tokyo_photos_${activeMemoDay}`)) || [];
+
+      saved.forEach((base64Str, idx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'photo-thumb-wrap';
+        wrap.innerHTML = `
+          <img src="${base64Str}" alt="photo" onclick="openLightbox('${base64Str}')">
+          <button class="photo-del-btn" onclick="event.stopPropagation(); deletePhoto(${idx})">✕</button>
+        `;
+        container.appendChild(wrap);
+      });
+    }
+
+    function handlePhotoUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      const saved = JSON.parse(localStorage.getItem(`tokyo_photos_${activeMemoDay}`)) || [];
+      
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          saved.push(e.target.result);
+          localStorage.setItem(`tokyo_photos_${activeMemoDay}`, JSON.stringify(saved));
+          loadPhotos();
+        };
+        reader.readAsDataURL(file);
+      });
+      event.target.value = '';
+    }
+
+    function deletePhoto(idx) {
+      const saved = JSON.parse(localStorage.getItem(`tokyo_photos_${activeMemoDay}`)) || [];
+      saved.splice(idx, 1);
+      localStorage.setItem(`tokyo_photos_${activeMemoDay}`, JSON.stringify(saved));
+      loadPhotos();
+    }
+
+    function openLightbox(imgSrc) {
+      document.getElementById('lightboxImg').src = imgSrc;
+      document.getElementById('lightboxModal').style.display = 'flex';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightboxModal').style.display = 'none';
+    }
+
+    const initialShopping = [
+      { cat: "me", name: "위스키 (시나노야)", cost: 0, curr: "JPY", checked: false },
+      { cat: "me", name: "몽벨 의류", cost: 0, curr: "JPY", checked: false },
+      { cat: "family", name: "유니클로 의류", cost: 0, curr: "JPY", checked: false },
+      { cat: "friend", name: "디저트 선물", cost: 0, curr: "JPY", checked: false }
+    ];
+
+    function setShoppingFilter(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadShopping();
+    }
+
+    function loadShopping() {
+      let saved = JSON.parse(localStorage.getItem('tokyo_integrated_shopping'));
+      if (!saved) {
+        saved = initialShopping;
+        localStorage.setItem('tokyo_integrated_shopping', JSON.stringify(saved));
+      }
+
+      const ul = document.getElementById('shopping-item-list');
+      if (!ul) return;
+      ul.innerHTML = '';
+      
+      currentShoppingSumKRW = 0;
+      categorySumsKRW = { me: 0, family: 0, friend: 0 };
+
+      const catMap = {
+        me: { label: "🙋‍♂️ 나", class: "me" },
+        family: { label: "👨‍👩‍👧‍👦 가족", class: "family" },
+        friend: { label: "🎁 지인", class: "friend" }
+      };
+
+      const jpyToKrw = getJpyToKrwRate();
+
+      saved.forEach((item, index) => {
+        const rawCost = Number(item.cost) || 0;
+        const currency = item.curr || "JPY";
+        const costKRW = currency === "JPY" ? Math.round(rawCost * jpyToKrw) : rawCost;
+
+        currentShoppingSumKRW += costKRW;
+        if (categorySumsKRW[item.cat] !== undefined) {
+          categorySumsKRW[item.cat] += costKRW;
+        }
+
+        if (currentFilter !== 'all' && item.cat !== currentFilter) return;
+
+        const li = document.createElement('li');
+        li.className = 'item-row';
+        const catInfo = catMap[item.cat] || catMap['me'];
+
+        li.innerHTML = `
+          <div class="item-left">
+            <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShoppingChecked(${index})">
+            <span class="cat-badge ${catInfo.class}">${catInfo.label}</span>
+            <span style="${item.checked ? 'text-decoration:line-through; color:var(--text-sub);' : ''}">${item.name}</span>
+          </div>
+          <div class="item-right">
+            <input type="number" class="item-cost-input" value="${item.cost || ''}" placeholder="0" onchange="updateShoppingCost(${index}, this.value)">
+            <select class="item-currency-select" onchange="updateShoppingCurr(${index}, this.value)">
+              <option value="JPY" ${currency === 'JPY' ? 'selected' : ''}>¥</option>
+              <option value="KRW" ${currency === 'KRW' ? 'selected' : ''}>원</option>
+            </select>
+            <button class="delete-btn" onclick="deleteShoppingItem(${index})">✕</button>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+
+      const shoppingSumJPY = Math.round(currentShoppingSumKRW * getKrwToJpyRate());
+      const shopSummaryEl = document.getElementById('shopping-total-summary');
+      if (shopSummaryEl) shopSummaryEl.innerText = `총 ${currentShoppingSumKRW.toLocaleString()}원 (약 ¥${shoppingSumJPY.toLocaleString()})`;
+
+      updateTotalExpenseDisplay();
+    }
+
+    function addShoppingItem() {
+      const cat = document.getElementById('input-shop-cat').value;
+      const name = document.getElementById('input-shop-name').value.trim();
+      const cost = document.getElementById('input-shop-cost').value;
+      const curr = document.getElementById('input-shop-curr').value;
+
+      if (!name) return alert("품목명을 입력해주세요.");
+
+      const saved = JSON.parse(localStorage.getItem('tokyo_integrated_shopping')) || [];
+      saved.push({ cat, name, cost: cost ? Number(cost) : 0, curr, checked: false });
+      localStorage.setItem('tokyo_integrated_shopping', JSON.stringify(saved));
+
+      document.getElementById('input-shop-name').value = '';
+      document.getElementById('input-shop-cost').value = '';
+      loadShopping();
+    }
+
+    function toggleShoppingChecked(index) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_integrated_shopping')) || [];
+      saved[index].checked = !saved[index].checked;
+      localStorage.setItem('tokyo_integrated_shopping', JSON.stringify(saved));
+      loadShopping();
+    }
+
+    function updateShoppingCost(index, value) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_integrated_shopping')) || [];
+      saved[index].cost = Number(value) || 0;
+      localStorage.setItem('tokyo_integrated_shopping', JSON.stringify(saved));
+      loadShopping();
+    }
+
+    function updateShoppingCurr(index, value) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_integrated_shopping')) || [];
+      saved[index].curr = value;
+      localStorage.setItem('tokyo_integrated_shopping', JSON.stringify(saved));
+      loadShopping();
+    }
+
+    function deleteShoppingItem(index) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_integrated_shopping')) || [];
+      saved.splice(index, 1);
+      localStorage.setItem('tokyo_integrated_shopping', JSON.stringify(saved));
+      loadShopping();
+    }
+
+    const initialExpenses = [
+      { title: "항공권", amount: 0, curr: "KRW" },
+      { title: "숙소 (hotel MONday)", amount: 0, curr: "KRW" }
+    ];
+
+    function loadExpenses() {
+      let saved = JSON.parse(localStorage.getItem('tokyo_expenses_v2'));
+      if (!saved) {
+        saved = initialExpenses;
+        localStorage.setItem('tokyo_expenses_v2', JSON.stringify(saved));
+      }
+
+      const ul = document.getElementById('expense-input-list');
+      if (!ul) return;
+      ul.innerHTML = '';
+
+      currentGeneralSumKRW = 0;
+      const jpyToKrw = getJpyToKrwRate();
+
+      saved.forEach((item, index) => {
+        const rawAmt = Number(item.amount) || 0;
+        const curr = item.curr || 'KRW';
+        const amtKRW = curr === 'JPY' ? Math.round(rawAmt * jpyToKrw) : rawAmt;
+        currentGeneralSumKRW += amtKRW;
+
+        const li = document.createElement('li');
+        li.className = 'item-row';
+        li.innerHTML = `
+          <div class="item-left">
+            <span>${item.title}</span>
+          </div>
+          <div class="item-right">
+            <input type="number" class="item-cost-input" value="${item.amount || ''}" placeholder="0" onchange="updateExpenseAmount(${index}, this.value)">
+            <select class="item-currency-select" onchange="updateExpenseCurr(${index}, this.value)">
+              <option value="KRW" ${curr === 'KRW' ? 'selected' : ''}>원</option>
+              <option value="JPY" ${curr === 'JPY' ? 'selected' : ''}>¥</option>
+            </select>
+            <button class="delete-btn" onclick="deleteExpense(${index})">✕</button>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+
+      const expenseSumJPY = Math.round(currentGeneralSumKRW * getKrwToJpyRate());
+      const expSummaryEl = document.getElementById('expense-total-summary');
+      if (expSummaryEl) expSummaryEl.innerText = `총 ${currentGeneralSumKRW.toLocaleString()}원 (약 ¥${expenseSumJPY.toLocaleString()})`;
+
+      loadShopping();
+    }
+
+    function addExpense() {
+      const title = document.getElementById('expense-title').value.trim();
+      const amount = document.getElementById('expense-amount').value;
+      const curr = document.getElementById('expense-curr').value;
+
+      if (!title) return alert("항목명을 입력해주세요.");
+
+      const saved = JSON.parse(localStorage.getItem('tokyo_expenses_v2')) || [];
+      saved.push({ title, amount: amount ? Number(amount) : 0, curr });
+      localStorage.setItem('tokyo_expenses_v2', JSON.stringify(saved));
+
+      document.getElementById('expense-title').value = '';
+      document.getElementById('expense-amount').value = '';
+      loadExpenses();
+    }
+
+    function updateExpenseAmount(index, val) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_expenses_v2')) || [];
+      saved[index].amount = Number(val) || 0;
+      localStorage.setItem('tokyo_expenses_v2', JSON.stringify(saved));
+      loadExpenses();
+    }
+
+    function updateExpenseCurr(index, val) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_expenses_v2')) || [];
+      saved[index].curr = val;
+      localStorage.setItem('tokyo_expenses_v2', JSON.stringify(saved));
+      loadExpenses();
+    }
+
+    function deleteExpense(index) {
+      const saved = JSON.parse(localStorage.getItem('tokyo_expenses_v2')) || [];
+      saved.splice(index, 1);
+      localStorage.setItem('tokyo_expenses_v2', JSON.stringify(saved));
+      loadExpenses();
+    }
+
+    function updateTotalExpenseDisplay() {
+      const grandTotalKRW = currentGeneralSumKRW + currentShoppingSumKRW;
+      const grandTotalJPY = Math.round(grandTotalKRW * getKrwToJpyRate());
+
+      const krwEl = document.getElementById('total-expense-krw');
+      const jpyEl = document.getElementById('total-expense-jpy');
+      if (krwEl) krwEl.innerText = `${grandTotalKRW.toLocaleString()} 원`;
+      if (jpyEl) jpyEl.innerText = `(약 ¥${grandTotalJPY.toLocaleString()})`;
+    }
+
+    function openDetailModal() {
+      const krwToJpy = getKrwToJpyRate();
+
+      const genJPY = Math.round(currentGeneralSumKRW * krwToJpy);
+      const shopJPY = Math.round(currentShoppingSumKRW * krwToJpy);
+      const grandKRW = currentGeneralSumKRW + currentShoppingSumKRW;
+      const grandJPY = Math.round(grandKRW * krwToJpy);
+
+      document.getElementById('modal-general-sum').innerText = `${currentGeneralSumKRW.toLocaleString()} 원 (약 ¥${genJPY.toLocaleString()})`;
+      document.getElementById('modal-shopping-sum').innerText = `${currentShoppingSumKRW.toLocaleString()} 원 (약 ¥${shopJPY.toLocaleString()})`;
+      
+      document.getElementById('modal-me-sum').innerText = `${categorySumsKRW.me.toLocaleString()} 원`;
+      document.getElementById('modal-family-sum').innerText = `${categorySumsKRW.family.toLocaleString()} 원`;
+      document.getElementById('modal-friend-sum').innerText = `${categorySumsKRW.friend.toLocaleString()} 원`;
+
+      document.getElementById('modal-grand-sum').innerText = `${grandKRW.toLocaleString()} 원 (약 ¥${grandJPY.toLocaleString()})`;
+
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    function exportToCSV() {
+      let csvContent = "\uFEFF구분,항목/품목명,금액,통화\n";
+
+      const expenses = JSON.parse(localStorage.getItem('tokyo_expenses_v2')) || [];
+      expenses.forEach(e => {
+        csvContent += `일반경비,"${e.title}",${e.amount || 0},${e.curr}\n`;
+      });
+
+      const shopping = JSON.parse(localStorage.getItem('tokyo_integrated_shopping')) || [];
+      const catNameMap = { me: "쇼핑(나)", family: "쇼핑(가족)", friend: "쇼핑(지인)" };
+      shopping.forEach(s => {
+        csvContent += `${catNameMap[s.cat] || '쇼핑'},"${s.name}",${s.cost || 0},${s.curr}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'Tokyo_Trip_Expenses_2026.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.onload = function() {
+      const savedRate = localStorage.getItem('tokyo_jpy_rate_100');
+      if (savedRate) {
+        krwPer100Jpy = Number(savedRate);
+        const rateInput = document.getElementById('jpy-rate-input');
+        if (rateInput) rateInput.value = savedRate;
+      }
+
+      loadCustomLinks();
+      loadSchedules();
+      loadExpenses();
+      fetchTokyoHourlyWeather();
+    };
+  </script>
+</body>
+</html>
