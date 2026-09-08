@@ -86,13 +86,14 @@
       justify-content: space-between;
     }
 
-    .banner-text-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+    .banner-text-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 6px; word-break: keep-all; white-space: nowrap; }
 
     .banner-links-wrapper {
       display: flex;
       gap: 6px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
       justify-content: flex-end;
+      align-items: center;
     }
 
     .link-toggle-container {
@@ -116,6 +117,7 @@
       text-decoration: none;
       display: inline-flex;
       align-items: center;
+      white-space: nowrap;
     }
 
     .subtle-toggle-btn {
@@ -317,7 +319,6 @@
 
     .schedule-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; min-height: 50px; }
     
-    /* 드래그 앤 드롭 스타일 */
     .schedule-item {
       font-size: 13px;
       background: #f9f9fb;
@@ -421,8 +422,8 @@
       background: #f9f9fb;
     }
 
-    .add-input-group select.item-category { flex: 1.1; min-width: 0; font-size: 12px; font-weight: 700; }
-    .add-input-group input.item-name { flex: 1.8; min-width: 0; }
+    .add-input-group select.item-category { flex: 0.8; min-width: 0; font-size: 14px; text-align: center; }
+    .add-input-group input.item-name { flex: 2.1; min-width: 0; }
     .add-input-group input.item-cost { flex: 1.1; min-width: 0; }
     .add-input-group select.item-currency { width: 62px; padding: 8px 4px; font-size: 12px; font-weight: 700; }
 
@@ -457,15 +458,12 @@
     .item-left { display: flex; align-items: center; gap: 6px; flex: 1; overflow: hidden; }
 
     .cat-badge {
-      font-size: 10px;
-      padding: 3px 6px;
+      font-size: 14px;
+      padding: 2px 4px;
       border-radius: 5px;
       font-weight: 700;
       white-space: nowrap;
     }
-    .cat-badge.me { color: #004085; background-color: #cce5ff; }
-    .cat-badge.family { color: #155724; background-color: #d4edda; }
-    .cat-badge.friend { color: #383d41; background-color: #e2e3e5; }
 
     .item-cost-input {
       width: 70px;
@@ -821,7 +819,6 @@
       border: none;
     }
 
-    /* 일본어 크게 보여주기 모달 스타일 */
     .cheat-large-modal {
       display: none;
       position: fixed;
@@ -848,7 +845,6 @@
     .cheat-large-kr { font-size: 14px; color: var(--text-sub); }
     .cheat-large-mean { font-size: 15px; font-weight: 700; color: var(--accent-blue); background: #f0f7ff; padding: 8px; border-radius: 8px; }
 
-    /* 필수 회화 팝업 리스트 스타일 (모바일 최대 크기 및 넓은 레이아웃 적용) */
     .cheat-modal-card {
       background: #ffffff;
       width: 100%;
@@ -932,10 +928,10 @@
         <div class="trip-date-badge">09.09(수) ~ 09.11(금)</div>
       </div>
       
-      <!-- 상단 배너 (도쿄 여행 일정 + 1시간 단위 날씨 스트립 + 항공권/숙소/회화 순 버튼 배치) -->
+      <!-- 상단 배너 (도쿄 여행 일정 폭 확보 및 항공권/숙소/회화 한 줄 배치) -->
       <div class="trip-banner">
         <div class="banner-top-row">
-          <div class="banner-text-title">🗓️ 도쿄 여행 일정</div>
+          <div class="banner-text-title">🗓️ 도쿄 여행</div>
           
           <div class="banner-links-wrapper">
             <div class="link-toggle-container">
@@ -960,12 +956,10 @@
               </div>
             </div>
 
-            <!-- 필수회화 버튼 (항공권/숙소 다음 순서) -->
-            <button type="button" class="banner-action-btn" style="background:#2c2c2e; border:1px solid #48484a; border-radius:6px; padding:4px 8px;" onclick="openCheatModal()">🗣️ 필수회화</button>
+            <button type="button" class="banner-action-btn" style="background:#2c2c2e; border:1px solid #48484a; border-radius:6px; padding:4px 8px;" onclick="openCheatModal()">🗣️ 회화</button>
           </div>
         </div>
 
-        <!-- 1시간 단위 도쿄 날씨 스트립 -->
         <div class="banner-weather-strip">
           <div class="banner-weather-title">
             <span>🌤️ 도쿄 1시간 단위 날씨 예보</span>
@@ -978,7 +972,7 @@
       </div>
     </div>
 
-    <!-- 1. 일자별 일정 (드래그 앤 드롭 적용) -->
+    <!-- 1. 일자별 일정 -->
     <div>
       <div class="section-header">
         <span class="section-title">🗓️ 일자별 일정</span>
@@ -1035,7 +1029,7 @@
       </div>
     </div>
 
-    <!-- 총 지출 금액 종합 박스 (평균 환율 내용 이동 완료) -->
+    <!-- 총 지출 금액 종합 박스 및 환율 설정 -->
     <div>
       <div class="expense-total-box" onclick="openDetailModal()">
         <div class="total-header">
@@ -1049,10 +1043,9 @@
           </div>
           <span class="touch-hint">상세 내역 보기 🔍</span>
         </div>
-        <!-- 평균 환율 설정 박스를 총 지출 금액 총합 하단으로 이동 -->
-        <div style="margin-top: 14px; border-top: 1px solid #48484a; padding-top: 10px; display: flex; justify-content: flex-end;">
+        <div style="margin-top: 14px; border-top: 1px solid #48484a; padding-top: 10px; display: flex; justify-content: flex-end;" onclick="event.stopPropagation()">
           <div class="rate-setting-box">
-            <span>평균 환율 100엔 =</span>
+            <span>환율 (100엔당)</span>
             <input type="number" id="jpy-rate-input" class="rate-input" value="900" onchange="updateExchangeRate()">
             <span>원</span>
           </div>
@@ -1079,15 +1072,15 @@
 
         <div class="add-input-group">
           <select id="input-shop-cat" class="item-category">
-            <option value="me">🙋‍♂️ 나</option>
-            <option value="family">👨‍👩‍👧‍👦 가족</option>
-            <option value="friend">🎁 지인</option>
+            <option value="me">🙋‍♂️</option>
+            <option value="family">👨‍👩‍👧‍👦</option>
+            <option value="friend">🎁</option>
           </select>
           <input type="text" id="input-shop-name" class="item-name" placeholder="품목명...">
           <input type="number" id="input-shop-cost" class="item-cost" placeholder="금액">
           <select id="input-shop-curr" class="item-currency">
             <option value="JPY">¥ (엔)</option>
-            <option value="KRW">원 (KRW)</option>
+            <option value="KRW">₩ (원)</option>
           </select>
           <button class="add-icon-btn" onclick="addShoppingItem()">＋</button>
         </div>
@@ -1110,7 +1103,7 @@
             <input type="text" id="expense-title" class="item-name" placeholder="항목 (예: 비행기, 숙소)">
             <input type="number" id="expense-amount" class="item-cost" placeholder="금액">
             <select id="expense-curr" class="item-currency">
-              <option value="KRW">원 (KRW)</option>
+              <option value="KRW">₩ (원)</option>
               <option value="JPY">¥ (엔)</option>
             </select>
             <button class="add-icon-btn" onclick="addExpense()">＋</button>
@@ -1169,7 +1162,7 @@
     </div>
   </div>
 
-  <!-- 필수 언어/회화 모음 팝업창 (드래그 앤 드롭 및 넓은 화면 적용) -->
+  <!-- 필수 언어/회화 모음 팝업창 -->
   <div class="modal-overlay" id="cheatModal">
     <div class="cheat-modal-card">
       <div class="modal-title" style="display:flex; justify-content:space-between; align-items:center;">
@@ -1204,19 +1197,17 @@
     </div>
   </div>
 
-  <!-- 할일/체크리스트/사진 모달 (3분할 레이아웃) -->
+  <!-- 할일/체크리스트/사진 모달 -->
   <div class="modal-overlay" id="memoModal">
     <div class="modal-card-large">
       <div class="modal-title" id="memo-modal-title">DAY 1</div>
       
       <div class="todo-split-container">
-        <!-- 1열: 자유 메모 -->
         <div class="todo-pane">
           <div class="pane-title">📝 메모</div>
           <textarea id="daily-memo-input" class="memo-textarea-modal" placeholder="해당 일자의 메모를 적어보세요..." oninput="saveCurrentDailyMemo()"></textarea>
         </div>
 
-        <!-- 2열: 체크리스트 -->
         <div class="todo-pane">
           <div class="pane-title">✅ 체크리스트</div>
           <div class="checklist-input-row">
@@ -1226,7 +1217,6 @@
           <ul id="checklist-items-container" class="checklist-items"></ul>
         </div>
 
-        <!-- 3열: 사진 첨부 및 갤러리 -->
         <div class="todo-pane">
           <div class="pane-title">📷 사진</div>
           <div class="photo-upload-box">
@@ -1257,7 +1247,6 @@
     let draggedDay = null;
     let draggedCheatIndex = null;
 
-    // 도쿄 1시간 단위 날씨 가져오기 (Open-Meteo API)
     async function fetchTokyoHourlyWeather() {
       try {
         const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=35.6762&longitude=139.6503&hourly=temperature_2m,weathercode');
@@ -1296,7 +1285,6 @@
       return "🌤️";
     }
 
-    // 기본 필수 회화 데이터 및 로컬스토리지 관리
     const initialCheatData = [
       { jp: 'すみません、これをお願いします。', kr: '스미마센, 고레오 오네가이시마스', mean: '저기요, 이것 주세요.' },
       { jp: 'おすすめは何ですか？', kr: '오스스메와 난데스까?', mean: '추천 메뉴가 무엇인가요?' },
@@ -1833,9 +1821,9 @@
       categorySumsKRW = { me: 0, family: 0, friend: 0 };
 
       const catMap = {
-        me: { label: "🙋‍♂️ 나", class: "me" },
-        family: { label: "👨‍👩‍👧‍👦 가족", class: "family" },
-        friend: { label: "🎁 지인", class: "friend" }
+        me: { label: "🙋‍♂️", class: "me" },
+        family: { label: "👨‍👩‍👧‍👦", class: "family" },
+        friend: { label: "🎁", class: "friend" }
       };
 
       const jpyToKrw = getJpyToKrwRate();
@@ -1859,14 +1847,14 @@
         li.innerHTML = `
           <div class="item-left">
             <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleShoppingChecked(${index})">
-            <span class="cat-badge ${catInfo.class}">${catInfo.label}</span>
+            <span class="cat-badge">${catInfo.label}</span>
             <span style="${item.checked ? 'text-decoration:line-through; color:var(--text-sub);' : ''}">${item.name}</span>
           </div>
           <div class="item-right">
             <input type="number" class="item-cost-input" value="${item.cost || ''}" placeholder="0" onchange="updateShoppingCost(${index}, this.value)">
             <select class="item-currency-select" onchange="updateShoppingCurr(${index}, this.value)">
               <option value="JPY" ${currency === 'JPY' ? 'selected' : ''}>¥</option>
-              <option value="KRW" ${currency === 'KRW' ? 'selected' : ''}>원</option>
+              <option value="KRW" ${currency === 'KRW' ? 'selected' : ''}>₩</option>
             </select>
             <button class="delete-btn" onclick="deleteShoppingItem(${index})">✕</button>
           </div>
@@ -1876,7 +1864,7 @@
 
       const shoppingSumJPY = Math.round(currentShoppingSumKRW * getKrwToJpyRate());
       const shopSummaryEl = document.getElementById('shopping-total-summary');
-      if (shopSummaryEl) shopSummaryEl.innerText = `총 ${currentShoppingSumKRW.toLocaleString()}원 (약 ¥${shoppingSumJPY.toLocaleString()})`;
+      if (shopSummaryEl) shopSummaryEl.innerText = `총 ₩${currentShoppingSumKRW.toLocaleString()} (약 ¥${shoppingSumJPY.toLocaleString()})`;
 
       updateTotalExpenseDisplay();
     }
@@ -1960,7 +1948,7 @@
           <div class="item-right">
             <input type="number" class="item-cost-input" value="${item.amount || ''}" placeholder="0" onchange="updateExpenseAmount(${index}, this.value)">
             <select class="item-currency-select" onchange="updateExpenseCurr(${index}, this.value)">
-              <option value="KRW" ${curr === 'KRW' ? 'selected' : ''}>원</option>
+              <option value="KRW" ${curr === 'KRW' ? 'selected' : ''}>₩</option>
               <option value="JPY" ${curr === 'JPY' ? 'selected' : ''}>¥</option>
             </select>
             <button class="delete-btn" onclick="deleteExpense(${index})">✕</button>
@@ -1971,7 +1959,7 @@
 
       const expenseSumJPY = Math.round(currentGeneralSumKRW * getKrwToJpyRate());
       const expSummaryEl = document.getElementById('expense-total-summary');
-      if (expSummaryEl) expSummaryEl.innerText = `총 ${currentGeneralSumKRW.toLocaleString()}원 (약 ¥${expenseSumJPY.toLocaleString()})`;
+      if (expSummaryEl) expSummaryEl.innerText = `총 ₩${currentGeneralSumKRW.toLocaleString()} (약 ¥${expenseSumJPY.toLocaleString()})`;
 
       loadShopping();
     }
@@ -2019,7 +2007,7 @@
 
       const krwEl = document.getElementById('total-expense-krw');
       const jpyEl = document.getElementById('total-expense-jpy');
-      if (krwEl) krwEl.innerText = `${grandTotalKRW.toLocaleString()} 원`;
+      if (krwEl) krwEl.innerText = `₩${grandTotalKRW.toLocaleString()}`;
       if (jpyEl) jpyEl.innerText = `(약 ¥${grandTotalJPY.toLocaleString()})`;
     }
 
@@ -2031,14 +2019,14 @@
       const grandKRW = currentGeneralSumKRW + currentShoppingSumKRW;
       const grandJPY = Math.round(grandKRW * krwToJpy);
 
-      document.getElementById('modal-general-sum').innerText = `${currentGeneralSumKRW.toLocaleString()} 원 (약 ¥${genJPY.toLocaleString()})`;
-      document.getElementById('modal-shopping-sum').innerText = `${currentShoppingSumKRW.toLocaleString()} 원 (약 ¥${shopJPY.toLocaleString()})`;
+      document.getElementById('modal-general-sum').innerText = `₩${currentGeneralSumKRW.toLocaleString()} (약 ¥${genJPY.toLocaleString()})`;
+      document.getElementById('modal-shopping-sum').innerText = `₩${currentShoppingSumKRW.toLocaleString()} (약 ¥${shopJPY.toLocaleString()})`;
       
-      document.getElementById('modal-me-sum').innerText = `${categorySumsKRW.me.toLocaleString()} 원`;
-      document.getElementById('modal-family-sum').innerText = `${categorySumsKRW.family.toLocaleString()} 원`;
-      document.getElementById('modal-friend-sum').innerText = `${categorySumsKRW.friend.toLocaleString()} 원`;
+      document.getElementById('modal-me-sum').innerText = `₩${categorySumsKRW.me.toLocaleString()}`;
+      document.getElementById('modal-family-sum').innerText = `₩${categorySumsKRW.family.toLocaleString()}`;
+      document.getElementById('modal-friend-sum').innerText = `₩${categorySumsKRW.friend.toLocaleString()}`;
 
-      document.getElementById('modal-grand-sum').innerText = `${grandKRW.toLocaleString()} 원 (약 ¥${grandJPY.toLocaleString()})`;
+      document.getElementById('modal-grand-sum').innerText = `₩${grandKRW.toLocaleString()} (약 ¥${grandJPY.toLocaleString()})`;
 
       document.getElementById('detailModal').style.display = 'flex';
     }
